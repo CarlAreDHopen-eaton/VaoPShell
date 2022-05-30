@@ -9,6 +9,6 @@ This PowerShell Script Module allows interaction with Video Servers that support
 - Start a new PowerShell terminal window.
 
 # Functions
-Get-CameraList
-Get-Camera
-Invoke-CameraToMonitor
+- Get-CameraList - Gets a list of cameras avaliable from the video server.
+- Get-Camera - Gets information about a single cameras from the video server.
+- Invoke-CameraToMonitor - Selects a camera(input) to a monitor(output)
