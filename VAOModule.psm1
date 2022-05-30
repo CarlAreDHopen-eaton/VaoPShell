@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------------------------------------------------
-# VAO PowerShell Module
+# VAO PowerShell Module (https://github.com/CarlAreDHopen-eaton/VaoPShell)
 # ------------------------------------------------------------------------------------------------------------------------
 # Installation:
 # ------------------------------------------------------------------------------------------------------------------------
@@ -14,6 +14,37 @@
 # ------------------------------------------------------------------------------------------------------------------------
 # Exported functions
 # ------------------------------------------------------------------------------------------------------------------------
+
+function Get-VaoApiVersion
+{
+    param(
+         [Parameter(Mandatory=$true)]
+         [string]$RemoteHost,
+         [Parameter(Mandatory=$true)]
+         [string]$User,
+         [Parameter(Mandatory=$true)]
+         [string]$Password,
+         [Parameter()]
+         [int]$RemotePort = 444,
+         [Parameter()]
+         [switch]$Secure = $false,
+         [Parameter()]
+         [switch]$IgnoreCertificarteErrors = $false
+    )
+
+    $headers = GetRestHeaders -User $User -Password $Password
+    
+    $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
+    $url += "/version/api"
+  
+    if ($true -eq $IgnoreCertificarteErrors)
+    {
+        [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
+    }
+
+    Invoke-RestMethod -Method 'OPTIONS' -Uri $url -headers $headers
+    
+}
 
 function Get-CameraList
 {
@@ -37,6 +68,11 @@ function Get-CameraList
     $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
     $url += "/inputs"
   
+    if ($true -eq $IgnoreCertificarteErrors)
+    {
+        [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
+    }
+
     Invoke-RestMethod -Method 'GET' -Uri $url -headers $headers
 }
 
@@ -108,6 +144,42 @@ function Get-Camera
     Invoke-RestMethod -Method 'GET' -Uri $url -headers $headers
 }
 
+function Set-CameraName
+{
+    param(
+         [Parameter(Mandatory=$true)]
+         [string]$RemoteHost,
+         [Parameter(Mandatory=$true)]
+         [string]$User,
+         [Parameter(Mandatory=$true)]
+         [string]$Password,
+         [Parameter(Mandatory=$true)]
+         [int]$CameraNumber,
+         [Parameter(Mandatory=$true)]
+         [string]$CameraName,
+         [Parameter()]
+         [int]$RemotePort = 444,
+         [Parameter()]
+         [switch]$Secure = $false,
+         [Parameter()]
+         [switch]$IgnoreCertificarteErrors = $false
+    )
+                  
+    $headers = GetRestHeaders -User $User -Password $Password
+
+    $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
+    $url += "/inputs/" + $CameraNumber    
+    
+    if ($true -eq $IgnoreCertificarteErrors)
+    {
+        [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
+    }
+
+    $jsonData = "{ ""name"" : """ + $CameraName + """}"
+
+    Invoke-RestMethod -Method 'POST' -Uri $url -headers $headers -body $jsonData -ContentType "application/json"
+}
+
 # ------------------------------------------------------------------------------------------------------------------------
 # Private support functions
 # ------------------------------------------------------------------------------------------------------------------------
@@ -166,3 +238,5 @@ function GetAcceptAllCertificatesPolicyObject
 Export-ModuleMember -Function Get-CameraList
 Export-ModuleMember -Function Get-Camera
 Export-ModuleMember -Function Invoke-CameraToMonitor
+Export-ModuleMember -Function Get-VaoApiVersion
+Export-ModuleMember -Function Set-CameraName
