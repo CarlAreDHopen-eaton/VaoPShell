@@ -4,13 +4,14 @@ This PowerShell Script Module allows interaction with Video Servers that support
 The primary function of the API is to get and control cameras.
 
 # Installation
+Installation requires administrative rights.
 - Open the **C:\Windows\System32\WindowsPowerShell\v1.0\Modules** folder
 - Make a new folder named VAOModule
 - Copy VAOModule.psm1 to the VAOModule folder
 
 # Usage
 - Start a new PowerShell terminal window.
-- May need to use Set-ExecutionPolicy command (admin required)
+- May need to use Set-ExecutionPolicy command (administrative rights required)
 - Use any of the functions listed below. 
 
 # Functions
