@@ -1,7 +1,7 @@
 # VaoPShell
 VAO API PowerShell Script Module
-This PowerShell Script Module allows interaction with Video Servers that supports the VAI REST API (https://vao.docs.apiary.io/)
-The primary function of the API is to get and control cameras.
+This PowerShell Script Module allows interaction with Video Servers that supports the VAO REST API (https://vao.docs.apiary.io/).
+The primary function of the VAO API is to get and control cameras.
 
 # Installation
 Installation requires administrative rights.
