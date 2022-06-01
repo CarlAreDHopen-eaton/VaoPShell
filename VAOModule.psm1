@@ -20,18 +20,19 @@
 function Get-VaoApiVersion
 {
     param(
-         [Parameter(Mandatory=$true)]
-         [string]$RemoteHost,
-         [Parameter(Mandatory=$true)]
-         [string]$User,
-         [Parameter(Mandatory=$true)]
-         [string]$Password,
-         [Parameter()]
-         [int]$RemotePort = 444,
-         [Parameter()]
-         [switch]$Secure = $false,
-         [Parameter()]
-         [switch]$IgnoreCertificarteErrors = $false
+        # Connection specific parameters
+        [Parameter(Mandatory=$true)]
+        [string]$RemoteHost,
+        [Parameter(Mandatory=$true)]
+        [string]$User,
+        [Parameter(Mandatory=$true)]
+        [string]$Password,
+        [Parameter()]
+        [int]$RemotePort = 444,
+        [Parameter()]
+        [switch]$Secure = $false,
+        [Parameter()]
+        [switch]$IgnoreCertificarteErrors = $false
     )
 
     $headers = GetRestHeaders -User $User -Password $Password
@@ -48,21 +49,54 @@ function Get-VaoApiVersion
     
 }
 
-function Get-CameraList
+function Get-VaoVendorVersion
 {
     param(
-         [Parameter(Mandatory=$true)]
-         [string]$RemoteHost,
-         [Parameter(Mandatory=$true)]
-         [string]$User,
-         [Parameter(Mandatory=$true)]
-         [string]$Password,
-         [Parameter()]
-         [int]$RemotePort = 444,
-         [Parameter()]
-         [switch]$Secure = $false,
-         [Parameter()]
-         [switch]$IgnoreCertificarteErrors = $false
+        # Connection specific parameters
+        [Parameter(Mandatory=$true)]
+        [string]$RemoteHost,
+        [Parameter(Mandatory=$true)]
+        [string]$User,
+        [Parameter(Mandatory=$true)]
+        [string]$Password,
+        [Parameter()]
+        [int]$RemotePort = 444,
+        [Parameter()]
+        [switch]$Secure = $false,
+        [Parameter()]
+        [switch]$IgnoreCertificarteErrors = $false
+    )
+
+    $headers = GetRestHeaders -User $User -Password $Password
+    
+    $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
+    $url += "/version/implementation"
+  
+    if ($true -eq $IgnoreCertificarteErrors)
+    {
+        [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
+    }
+
+    Invoke-RestMethod -Method 'OPTIONS' -Uri $url -headers $headers
+    
+}
+
+function Get-VaoCameraList
+{
+    param(
+        # Connection specific parameters
+        [Parameter(Mandatory=$true)]
+        [string]$RemoteHost,
+        [Parameter(Mandatory=$true)]
+        [string]$User,
+        [Parameter(Mandatory=$true)]
+        [string]$Password,
+        [Parameter()]
+        [int]$RemotePort = 444,
+        [Parameter()]
+        [switch]$Secure = $false,
+        [Parameter()]
+        [switch]$IgnoreCertificarteErrors = $false
     )
     
     $headers = GetRestHeaders -User $User -Password $Password
@@ -78,25 +112,28 @@ function Get-CameraList
     Invoke-RestMethod -Method 'GET' -Uri $url -headers $headers
 }
 
-function Invoke-CameraToMonitor
+function Invoke-VaoCameraToMonitor
 {
     param(
-         [Parameter(Mandatory=$true)]
-         [string]$RemoteHost,
-         [Parameter(Mandatory=$true)]
-         [string]$User,
-         [Parameter(Mandatory=$true)]
-         [string]$Password,
-         [Parameter(Mandatory=$true)]
-         [int]$CameraNumber,
-         [Parameter(Mandatory=$true)]
-         [int]$MonitorNumber,
-         [Parameter()]
-         [int]$RemotePort = 444,
-         [Parameter()]
-         [switch]$Secure = $false,
-         [Parameter()]
-         [switch]$IgnoreCertificarteErrors = $false
+        # Connection specific parameters
+        [Parameter(Mandatory=$true)]
+        [string]$RemoteHost,
+        [Parameter(Mandatory=$true)]
+        [string]$User,
+        [Parameter(Mandatory=$true)]
+        [string]$Password,
+        [Parameter()]
+        [int]$RemotePort = 444,
+        [Parameter()]
+        [switch]$Secure = $false,
+        [Parameter()]
+        [switch]$IgnoreCertificarteErrors = $false,
+
+        # Function specific parameters
+        [Parameter(Mandatory=$true)]
+        [int]$CameraNumber,
+        [Parameter(Mandatory=$true)]
+        [int]$MonitorNumber
     )    
 
     $headers = GetRestHeaders -User $User -Password $Password
@@ -114,23 +151,26 @@ function Invoke-CameraToMonitor
     Invoke-RestMethod -Method 'PUT' -Uri $url -headers $headers -body $jsonData -ContentType "application/json"
 }
 
-function Get-Camera
+function Get-VaoCamera
 {
     param(
-         [Parameter(Mandatory=$true)]
-         [string]$RemoteHost,
-         [Parameter(Mandatory=$true)]
-         [string]$User,
-         [Parameter(Mandatory=$true)]
-         [string]$Password,
-         [Parameter(Mandatory=$true)]
-         [int]$CameraNumber,
-         [Parameter()]
-         [int]$RemotePort = 444,
-         [Parameter()]
-         [switch]$Secure = $false,
-         [Parameter()]
-         [switch]$IgnoreCertificarteErrors = $false
+        # Connection specific parameters
+        [Parameter(Mandatory=$true)]
+        [string]$RemoteHost,
+        [Parameter(Mandatory=$true)]
+        [string]$User,
+        [Parameter(Mandatory=$true)]
+        [string]$Password,
+        [Parameter()]
+        [int]$RemotePort = 444,
+        [Parameter()]
+        [switch]$Secure = $false,
+        [Parameter()]
+        [switch]$IgnoreCertificarteErrors = $false,
+
+        # Function specific parameters
+        [Parameter(Mandatory=$true)]
+        [int]$CameraNumber
     )
                   
     $headers = GetRestHeaders -User $User -Password $Password
@@ -146,26 +186,137 @@ function Get-Camera
     Invoke-RestMethod -Method 'GET' -Uri $url -headers $headers
 }
 
-function Set-CameraName
+function Get-VaoCameraPresetList
 {
     param(
+        # Connection specific parameters
          [Parameter(Mandatory=$true)]
          [string]$RemoteHost,
          [Parameter(Mandatory=$true)]
          [string]$User,
          [Parameter(Mandatory=$true)]
          [string]$Password,
-         [Parameter(Mandatory=$true)]
-         [int]$CameraNumber,
-         [Parameter(Mandatory=$true)]
-         [string]$CameraName,
          [Parameter()]
          [int]$RemotePort = 444,
          [Parameter()]
          [switch]$Secure = $false,
          [Parameter()]
-         [switch]$IgnoreCertificarteErrors = $false
+         [switch]$IgnoreCertificarteErrors = $false,
+
+         # Function specific parameters
+         [Parameter(Mandatory=$true)]
+         [int]$CameraNumber
     )
+                  
+    $headers = GetRestHeaders -User $User -Password $Password
+
+    $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
+    $url += "/inputs/$CameraNumber/presets"
+    
+    if ($true -eq $IgnoreCertificarteErrors)
+    {
+        [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
+    }
+
+    Invoke-RestMethod -Method 'GET' -Uri $url -headers $headers
+}
+
+function Get-VaoCameraPreset
+{
+    param(
+        # Connection specific parameters
+        [Parameter(Mandatory=$true)]
+        [string]$RemoteHost,
+        [Parameter(Mandatory=$true)]
+        [string]$User,
+        [Parameter(Mandatory=$true)]
+        [string]$Password,
+        [Parameter()]
+        [int]$RemotePort = 444,
+        [Parameter()]
+        [switch]$Secure = $false,
+        [Parameter()]
+        [switch]$IgnoreCertificarteErrors = $false,
+
+        # Function specific parameters
+        [Parameter(Mandatory=$true)]
+        [int]$CameraNumber,
+        [Parameter(Mandatory=$true)]
+        [int]$PresetNumber
+    )
+                  
+    $headers = GetRestHeaders -User $User -Password $Password
+
+    $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
+    $url += "/inputs/$CameraNumber/presets/$PresetNumber"
+    
+    if ($true -eq $IgnoreCertificarteErrors)
+    {
+        [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
+    }
+
+    Invoke-RestMethod -Method 'GET' -Uri $url -headers $headers
+}
+
+function Get-VaoCameraOnMonitor
+{
+    param(
+        # Connection specific parameters
+        [Parameter(Mandatory=$true)]
+        [string]$RemoteHost,
+        [Parameter(Mandatory=$true)]
+        [string]$User,
+        [Parameter(Mandatory=$true)]
+        [string]$Password,
+        [Parameter()]
+        [int]$RemotePort = 444,
+        [Parameter()]
+        [switch]$Secure = $false,
+        [Parameter()]
+        [switch]$IgnoreCertificarteErrors = $false,
+
+        # Function specific parameters
+        [Parameter(Mandatory=$true)]
+        [int]$MonitorNumber
+    )
+                  
+    $headers = GetRestHeaders -User $User -Password $Password
+
+    $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
+    $url += "/video-output/" + $MonitorNumber    
+    
+    if ($true -eq $IgnoreCertificarteErrors)
+    {
+        [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
+    }
+
+    Invoke-RestMethod -Method 'GET' -Uri $url -headers $headers
+}
+
+function Rename-VaoCamera
+{
+    param(
+        # Connection specific parameters
+        [Parameter(Mandatory=$true)]
+        [string]$RemoteHost,
+        [Parameter(Mandatory=$true)]
+        [string]$User,
+        [Parameter(Mandatory=$true)]
+        [string]$Password,
+        [Parameter()]
+        [int]$RemotePort = 444,
+        [Parameter()]
+        [switch]$Secure = $false,
+        [Parameter()]
+        [switch]$IgnoreCertificarteErrors = $false,
+
+        # Connection specific parameters
+        [Parameter(Mandatory=$true)]
+        [int]$CameraNumber,
+        [Parameter(Mandatory=$true)]
+        [string]$CameraName
+
+   )
                   
     $headers = GetRestHeaders -User $User -Password $Password
 
@@ -182,6 +333,161 @@ function Set-CameraName
     Invoke-RestMethod -Method 'POST' -Uri $url -headers $headers -body $jsonData -ContentType "application/json"
 }
 
+function Add-VaoCameraPreset
+{
+  param(
+        # Connection specific parameters
+        [Parameter(Mandatory=$true)]
+        [string]$RemoteHost,
+        [Parameter(Mandatory=$true)]
+        [string]$User,
+        [Parameter(Mandatory=$true)]
+        [string]$Password,
+        [Parameter()]
+        [int]$RemotePort = 444,
+        [Parameter()]
+        [switch]$Secure = $false,
+        [Parameter()]
+        [switch]$IgnoreCertificarteErrors = $false,
+
+        # Function specific parameters
+        [Parameter(Mandatory=$true)]
+        [int]$CameraNumber,
+        [Parameter(Mandatory=$true)]
+        [string]$PresetName
+    )
+
+    $headers = GetRestHeaders -User $User -Password $Password
+
+    $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
+    $url += "/inputs/$CameraNumber/presets"
+
+    $jsonData = "{ ""name"" : """ + $PresetName + """}"
+
+    if ($true -eq $IgnoreCertificarteErrors)
+    {
+        [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
+    }
+
+    Invoke-RestMethod -Method 'POST' -Uri $url -headers $headers -body $jsonData -ContentType "application/json"
+}
+
+function Rename-VaoCameraPreset
+{
+    param(
+        # Connection specific parameters
+        [Parameter(Mandatory=$true)]
+        [string]$RemoteHost,
+        [Parameter(Mandatory=$true)]
+        [string]$User,
+        [Parameter(Mandatory=$true)]
+        [string]$Password,
+        [Parameter()]
+        [int]$RemotePort = 444,
+        [Parameter()]
+        [switch]$Secure = $false,
+        [Parameter()]
+        [switch]$IgnoreCertificarteErrors = $false,
+
+         # Function specific parameters
+        [Parameter(Mandatory=$true)]
+        [int]$CameraNumber,
+        [Parameter(Mandatory=$true)]
+        [int]$PresetNumber,
+        [Parameter(Mandatory=$true)]
+        [string]$PresetName
+    )
+                  
+    $headers = GetRestHeaders -User $User -Password $Password
+
+    $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
+    $url += "/inputs/$CameraNumber/presets/$PresetNumber"
+    
+    if ($true -eq $IgnoreCertificarteErrors)
+    {
+        [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
+    }
+
+    $jsonData = "{ ""name"" : """ + $PresetName + """}"
+
+    Invoke-RestMethod -Method 'PUT' -Uri $url -headers $headers -body $jsonData -ContentType "application/json"
+}
+
+function Remove-VaoCameraPreset
+{
+    param(
+        # Connection specific parameters
+        [Parameter(Mandatory=$true)]
+        [string]$RemoteHost,
+        [Parameter(Mandatory=$true)]
+        [string]$User,
+        [Parameter(Mandatory=$true)]
+        [string]$Password,
+        [Parameter()]
+        [int]$RemotePort = 444,
+        [Parameter()]
+        [switch]$Secure = $false,
+        [Parameter()]
+        [switch]$IgnoreCertificarteErrors = $false,
+
+        # Function specific parameters
+        [Parameter(Mandatory=$true)]
+        [int]$CameraNumber,
+        [Parameter(Mandatory=$true)]
+        [int]$PresetNumber
+    )
+                  
+    $headers = GetRestHeaders -User $User -Password $Password
+
+    $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
+    $url += "/inputs/$CameraNumber/presets/$PresetNumber"
+    
+    if ($true -eq $IgnoreCertificarteErrors)
+    {
+        [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
+    }
+
+    Invoke-RestMethod -Method 'DELETE' -Uri $url -headers $headers
+}
+
+function Invoke-VaoCameraPreset
+{
+    param(
+        # Connection specific parameters
+        [Parameter(Mandatory=$true)]
+        [string]$RemoteHost,
+        [Parameter(Mandatory=$true)]
+        [string]$User,
+        [Parameter(Mandatory=$true)]
+        [string]$Password,
+        [Parameter()]
+        [int]$RemotePort = 444,
+        [Parameter()]
+        [switch]$Secure = $false,
+        [Parameter()]
+        [switch]$IgnoreCertificarteErrors = $false,
+
+        # Function specific parameters
+        [Parameter(Mandatory=$true)]
+        [int]$CameraNumber,
+        [Parameter(Mandatory=$true)]
+        [int]$PresetNumber
+    )
+                  
+    $headers = GetRestHeaders -User $User -Password $Password
+
+    $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
+    $url += "/inputs/$CameraNumber/presets/$PresetNumber"
+    
+    if ($true -eq $IgnoreCertificarteErrors)
+    {
+        [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
+    }
+
+    Invoke-RestMethod -Method 'POST' -Uri $url -headers $headers
+}
+
+
 # ------------------------------------------------------------------------------------------------------------------------
 # Private support functions
 # ------------------------------------------------------------------------------------------------------------------------
@@ -189,12 +495,12 @@ function Set-CameraName
 function InitRestApiUrl
 {
     param(
-         [Parameter()]
-         [string]$RemoteHost,
-         [Parameter()]
-         [int]$RemotePort,
-         [Parameter()]
-         [bool]$Secure = $false
+        [Parameter()]
+        [string]$RemoteHost,
+        [Parameter()]
+        [int]$RemotePort,
+        [Parameter()]
+        [bool]$Secure = $false
     )        
     if ($true -eq $Secure)
     {
@@ -206,10 +512,10 @@ function InitRestApiUrl
 function GetRestHeaders
 {
     param(
-         [Parameter(Mandatory=$true)]
-         [string]$User,
-         [Parameter(Mandatory=$true)]
-         [string]$Password
+        [Parameter(Mandatory=$true)]
+        [string]$User,
+        [Parameter(Mandatory=$true)]
+        [string]$Password
     )
 
     $authenticationInfo = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("$User`:$Password"))    
@@ -237,8 +543,16 @@ function GetAcceptAllCertificatesPolicyObject
 # ------------------------------------------------------------------------------------------------------------------------
 # Exports
 # ------------------------------------------------------------------------------------------------------------------------
-Export-ModuleMember -Function Get-CameraList
-Export-ModuleMember -Function Get-Camera
-Export-ModuleMember -Function Invoke-CameraToMonitor
+Export-ModuleMember -Function Get-VaoCameraList
+Export-ModuleMember -Function Get-VaoCamera
+Export-ModuleMember -Function Get-VaoCameraPresetList
+Export-ModuleMember -Function Get-VaoCameraPreset
+Export-ModuleMember -Function Get-VaoCameraOnMonitor
 Export-ModuleMember -Function Get-VaoApiVersion
-Export-ModuleMember -Function Set-CameraName
+Export-ModuleMember -Function Get-VaoVendorVersion
+Export-ModuleMember -Function Invoke-VaoCameraToMonitor
+Export-ModuleMember -Function Invoke-VaoCameraPreset
+Export-ModuleMember -Function Rename-VaoCamera
+Export-ModuleMember -Function Rename-VaoCameraPreset
+Export-ModuleMember -Function Add-VaoCameraPreset
+Export-ModuleMember -Function Remove-VaoCameraPreset
