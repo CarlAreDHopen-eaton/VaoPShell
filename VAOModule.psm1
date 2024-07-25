@@ -487,6 +487,58 @@ function Invoke-VaoCameraPreset
     Invoke-RestMethod -Method 'POST' -Uri $url -headers $headers
 }
 
+function Invoke-VaoVideoDownload {
+    param(
+        # Connection specific parameters
+        [Parameter(Mandatory=$true)]
+        [string]$RemoteHost,
+        [Parameter(Mandatory=$true)]
+        [string]$User,
+        [Parameter(Mandatory=$true)]
+        [string]$Password,
+        [Parameter()]
+        [int]$RemotePort = 444,
+        [Parameter()]
+        [switch]$Secure = $false,
+        [Parameter()]
+        [switch]$IgnoreCertificarteErrors = $false,
+
+        # Function specific parameters
+        [Parameter(Mandatory=$true)]
+        [int]$CameraId,
+        [Parameter(Mandatory=$true)]
+        [string]$RecorderAddress,
+        [Parameter(Mandatory=$true)]
+        [string]$Stream,
+        [Parameter(Mandatory=$true)]
+        [string]$Start,
+        [Parameter(Mandatory=$true)]
+        [string]$Duration
+    )
+
+    if ($CameraId -le 0) {
+        throw "CameraId must be larger than zero."
+    }
+
+    $headers = GetRestHeaders -User $User -Password $Password
+
+    $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
+    $url += "/inputs/$CameraId/downloads"
+
+    $jsonData = @{
+        recorderAddress = $RecorderAddress
+        stream = $Stream
+        start = $Start
+        duration = $Duration
+    } | ConvertTo-Json
+
+    if ($true -eq $IgnoreCertificarteErrors) {
+        [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
+    }
+
+    Invoke-RestMethod -Method 'POST' -Uri $url -headers $headers -Body $jsonData -ContentType "application/json"
+}
+
 
 # ------------------------------------------------------------------------------------------------------------------------
 # Private support functions
@@ -556,3 +608,4 @@ Export-ModuleMember -Function Rename-VaoCamera
 Export-ModuleMember -Function Rename-VaoCameraPreset
 Export-ModuleMember -Function Add-VaoCameraPreset
 Export-ModuleMember -Function Remove-VaoCameraPreset
+Export-ModuleMember -Function Invoke-VaoVideoDownload
