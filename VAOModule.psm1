@@ -518,8 +518,7 @@ function Start-VaoVideoDownload {
         throw "CameraNumber must be larger than zero."
     }
 
-    #Invoke-VaoVideoDownload -RemoteHost 192.168.101.150 -User Service -Password Default333 -RemotePort 4433 -Secure -IgnoreCertificarteErrors -CameraNumber 7 -Stream 1 -RecorderAddress 1
-    $cameraRecorders = Get-VaoCameraRecorders -RemoteHost 192.168.101.150 -User Service -Password Default333 -RemotePort 4433 -Secure -IgnoreCertificarteErrors -CameraNumber 1 
+    $cameraRecorders = Get-VaoCameraRecorders -RemoteHost $RemoteHost -User $User -Password $Password -RemotePort $RemotePort -Secure:$Secure.IsPresent -IgnoreCertificarteErrors:$IgnoreCertificarteErrors.IsPresent -CameraNumber $CameraNumber 
 
     $foundRecorder = $false
     $recorderAddress = ""
@@ -560,7 +559,45 @@ function Start-VaoVideoDownload {
 
     $downloadId = $result.downloadId
 
-    #TODO start checking status messages to see when the download is ready for download.    
+    # TODO Implement a loop to wait 
+    Start-Sleep -Seconds 10
+   
+    $requestDateTime = (Get-Date).AddHours(-3)
+
+    # Format the date and time explicitly using the invariant culture to avoid locale issues
+    $formattedDateTime = $requestDateTime.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", [System.Globalization.CultureInfo]::InvariantCulture)
+
+    $messages = Get-VaoStatusMessages -RemoteHost $RemoteHost -User $User -Password $Password -RemotePort $RemotePort -Secure:$Secure.IsPresent -IgnoreCertificarteErrors:$IgnoreCertificarteErrors.IsPresent -IfModifiedSince "$formattedDateTime"
+
+    $downloadOk = $false
+    $downloadUrl = ""
+    $fileName = ""
+
+    # Iterate through each message to find the downloadId.
+    foreach ($message in $messages) {
+        if ($message.downloadNotification -ne $null)
+        {
+            if ($message.downloadNotification.downloadId -eq $downloadId)
+            {
+                if ($message.downloadNotification.status -eq "ok")
+                {
+                    $downloadUrl = $message.downloadNotification.downloadUrl
+                    $fileName = $message.downloadNotification.name
+                    $downloadOk = $true
+                    break
+                }
+            }
+        }
+    }
+
+    if ($true -eq $downloadOk)
+    {
+        Write-Host "File ready for FTP download ($downloadUrl)"
+    }
+    else
+    {
+        Write-Host "Download failed."
+    }
 }
 
 function Get-VaoCameraRecorders {
@@ -633,11 +670,25 @@ function GetRestHeaders
         [Parameter(Mandatory=$true)]
         [string]$User,
         [Parameter(Mandatory=$true)]
-        [string]$Password
+        [string]$Password,
+        [Parameter(Mandatory=$false)]
+        [string]$IfModifiedSince
     )
 
-    $authenticationInfo = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("$User`:$Password"))    
-    $headers = @{"X-Requested-With"="powershell";"Authorization"="Basic $authenticationInfo"}            
+    $authenticationInfo = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("$User`:$Password"))
+
+    # Create the base headers
+    $headers = @{
+        "X-Requested-With" = "powershell"
+        "Authorization" = "Basic $authenticationInfo"
+        "Accept" = "application/json"
+    }
+
+    # Add the If-Modified-Since header if the parameter is provided
+    if (-not [string]::IsNullOrEmpty($IfModifiedSince)) {
+        $headers["If-Modified-Since"] = $IfModifiedSince
+    }
+
     return $headers
 }
 
