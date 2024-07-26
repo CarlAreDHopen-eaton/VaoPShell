@@ -524,7 +524,7 @@ function Start-VaoVideoDownload {
     $recorderAddress = ""
 
     # Iterate through each recording to find the recorder.
-    foreach ($recording in $jsonResponse) {
+    foreach ($recording in $cameraRecorders) {
         if ($recording.stream -eq $Stream)
         {
             $foundRecorder = $true;
@@ -726,4 +726,4 @@ Export-ModuleMember -Function Rename-VaoCamera
 Export-ModuleMember -Function Rename-VaoCameraPreset
 Export-ModuleMember -Function Add-VaoCameraPreset
 Export-ModuleMember -Function Remove-VaoCameraPreset
-Export-ModuleMember -Function Invoke-VaoVideoDownload
+Export-ModuleMember -Function Start-VaoVideoDownload
