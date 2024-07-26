@@ -507,8 +507,6 @@ function Start-VaoVideoDownload {
         [Parameter(Mandatory=$true)]
         [int]$CameraNumber,
         [Parameter(Mandatory=$true)]
-        [string]$RecorderAddress,
-        [Parameter(Mandatory=$true)]
         [string]$Stream,
         [Parameter(Mandatory=$true)]
         [string]$Start,
@@ -520,13 +518,35 @@ function Start-VaoVideoDownload {
         throw "CameraNumber must be larger than zero."
     }
 
+    #Invoke-VaoVideoDownload -RemoteHost 192.168.101.150 -User Service -Password Default333 -RemotePort 4433 -Secure -IgnoreCertificarteErrors -CameraNumber 7 -Stream 1 -RecorderAddress 1
+    $cameraRecorders = Get-VaoCameraRecorders -RemoteHost 192.168.101.150 -User Service -Password Default333 -RemotePort 4433 -Secure -IgnoreCertificarteErrors -CameraNumber 1 
+
+    $foundRecorder = $false
+    $recorderAddress = ""
+
+    # Iterate through each recording to find the recorder.
+    foreach ($recording in $jsonResponse) {
+        if ($recording.stream -eq $Stream)
+        {
+            $foundRecorder = $true;
+            $recorderAddress = $recording.recorderAddress;
+            #Skipping test on $recording.recordingLimit
+            break
+        }
+    }
+
+    if ($foundRecorder -eq $false)
+    {
+        return;
+    }
+
     $headers = GetRestHeaders -User $User -Password $Password
 
     $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
     $url += "/inputs/$CameraNumber/downloads"
 
     $jsonData = @{
-        recorderAddress = $RecorderAddress
+        recorderAddress = $recorderAddress
         stream = $Stream
         start = $Start
         duration = $Duration
@@ -536,7 +556,11 @@ function Start-VaoVideoDownload {
         [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
     }
 
-    Invoke-RestMethod -Method 'POST' -Uri $url -headers $headers -Body $jsonData -ContentType "application/json"
+    $result = Invoke-RestMethod -Method 'POST' -Uri $url -headers $headers -Body $jsonData -ContentType "application/json"
+
+    $downloadId = $result.downloadId
+
+    #TODO start checking status messages to see when the download is ready for download.    
 }
 
 function Get-VaoCameraRecorders {
@@ -577,7 +601,9 @@ function Get-VaoCameraRecorders {
         [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
     }
 
-    Invoke-RestMethod -Method 'POST' -Uri $url -headers $headers -Body $jsonData -ContentType "application/json"
+    $result = Invoke-RestMethod -Method 'POST' -Uri $url -headers $headers -Body $jsonData -ContentType "application/json"
+
+    return $result
 }
 
 # ------------------------------------------------------------------------------------------------------------------------
