@@ -487,7 +487,7 @@ function Invoke-VaoCameraPreset
     Invoke-RestMethod -Method 'POST' -Uri $url -headers $headers
 }
 
-function Invoke-VaoVideoDownload {
+function Start-VaoVideoDownload {
     param(
         # Connection specific parameters
         [Parameter(Mandatory=$true)]
@@ -505,7 +505,7 @@ function Invoke-VaoVideoDownload {
 
         # Function specific parameters
         [Parameter(Mandatory=$true)]
-        [int]$CameraId,
+        [int]$CameraNumber,
         [Parameter(Mandatory=$true)]
         [string]$RecorderAddress,
         [Parameter(Mandatory=$true)]
@@ -516,14 +516,14 @@ function Invoke-VaoVideoDownload {
         [string]$Duration
     )
 
-    if ($CameraId -le 0) {
-        throw "CameraId must be larger than zero."
+    if ($CameraNumber -le 0) {
+        throw "CameraNumber must be larger than zero."
     }
 
     $headers = GetRestHeaders -User $User -Password $Password
 
     $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
-    $url += "/inputs/$CameraId/downloads"
+    $url += "/inputs/$CameraNumber/downloads"
 
     $jsonData = @{
         recorderAddress = $RecorderAddress
@@ -539,6 +539,46 @@ function Invoke-VaoVideoDownload {
     Invoke-RestMethod -Method 'POST' -Uri $url -headers $headers -Body $jsonData -ContentType "application/json"
 }
 
+function Get-VaoCameraRecorders {
+    param(
+        # Connection specific parameters
+        [Parameter(Mandatory=$true)]
+        [string]$RemoteHost,
+        [Parameter(Mandatory=$true)]
+        [string]$User,
+        [Parameter(Mandatory=$true)]
+        [string]$Password,
+        [Parameter()]
+        [int]$RemotePort = 444,
+        [Parameter()]
+        [switch]$Secure = $false,
+        [Parameter()]
+        [switch]$IgnoreCertificarteErrors = $false,
+
+        # Function specific parameters
+        [Parameter(Mandatory=$true)]
+        [int]$CameraNumber    )
+
+    if ($CameraNumber -le 0) {
+        throw "CameraNumber must be larger than zero."
+    }
+
+    $viewerId = New-Guid
+    $headers = GetRestHeaders -User $User -Password $Password
+
+    $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
+    $url += "/inputs/$CameraNumber/recordings"
+
+    $jsonData = @{
+        viewerId = $viewerId
+    } | ConvertTo-Json
+   
+    if ($true -eq $IgnoreCertificarteErrors) {
+        [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
+    }
+
+    Invoke-RestMethod -Method 'POST' -Uri $url -headers $headers -Body $jsonData -ContentType "application/json"
+}
 
 # ------------------------------------------------------------------------------------------------------------------------
 # Private support functions
@@ -602,6 +642,7 @@ Export-ModuleMember -Function Get-VaoCameraPreset
 Export-ModuleMember -Function Get-VaoCameraOnMonitor
 Export-ModuleMember -Function Get-VaoApiVersion
 Export-ModuleMember -Function Get-VaoVendorVersion
+Export-ModuleMember -Function Get-VaoCameraRecorders
 Export-ModuleMember -Function Invoke-VaoCameraToMonitor
 Export-ModuleMember -Function Invoke-VaoCameraPreset
 Export-ModuleMember -Function Rename-VaoCamera
