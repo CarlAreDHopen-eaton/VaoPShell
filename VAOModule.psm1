@@ -91,7 +91,7 @@ function Get-VaoAuthentication {
     $url = [System.Environment]::GetEnvironmentVariable("VAO_URL", [System.EnvironmentVariableTarget]::User)
 
     if (-not $url) {
-        Write-Host "The FLEX REST API authentication details has not been loaded into the enviroment settings"
+        Write-Error "The FLEX REST API authentication details has not been loaded into the enviroment settings"
         return
     }
 
@@ -123,13 +123,26 @@ function Start-VaoVideoDownload {
         [Parameter(Mandatory=$true)]
         [string]$Start,
         [Parameter(Mandatory=$true)]
-        [string]$Duration
-    )
+        [string]$Duration = "PT10M",
+        [Parameter(Mandatory=$false)]
+        [string]$FtpUser,
+        [Parameter(Mandatory=$true)]
+        [string]$FtpPassword,
+        [Parameter(Mandatory=$true)]
+        [string]$Path)
 
     process {
         if ($CameraNumber -le 0) {
             throw "CameraNumber must be larger than zero."
         }
+
+        # Ensure the local directory exists
+        if (!(Test-Path $Path -PathType Container))
+        {
+            Write-Error "Folder $Path missing"
+            return
+        }
+
 
         $cameraRecorders = Get-VaoCameraRecorders -RemoteHost $RemoteHost -User $User -Password $Password -RemotePort $RemotePort -Secure:$Secure.IsPresent -IgnoreCertificarteErrors:$IgnoreCertificarteErrors.IsPresent -CameraNumber $CameraNumber 
 
@@ -200,8 +213,9 @@ function Start-VaoVideoDownload {
 
         if ($true -eq $downloadOk) {
             Write-Host "File ready for FTP download ($downloadUrl)"
+            DownloadFtpFile -FtpUrl $downloadUrl -FtpUser $FtpUser -FtpPassword $FtpPassword -Path $Path -FileName $fileName
         } else {
-            Write-Host "Download failed."
+            Write-Error "Download failed."
         }
     }
 }
@@ -715,6 +729,52 @@ function Invoke-VaoCameraPreset
 # ------------------------------------------------------------------------------------------------------------------------
 # Private support functions
 # ------------------------------------------------------------------------------------------------------------------------
+
+function DownloadFtpFile()
+{
+    param(
+        [Parameter(Mandatory=$true, ValueFromPipelineByPropertyName=$true)]
+        [string]$FtpUrl,
+        [Parameter(Mandatory=$true)]
+        [string]$FtpUser,
+        [Parameter(Mandatory=$true)]
+        [string]$FtpPassword,
+        [Parameter(Mandatory=$true)]
+        [string]$Path,
+        [Parameter(Mandatory=$true)]
+        [string]$FileName
+
+    )
+
+    # Prepare the download request
+    Write-Host "Downloading ftp file to $Path\$FileName"
+    $downloadRequest = [System.Net.FtpWebRequest]::Create($FtpUrl)
+    $downloadRequest.Method = [System.Net.WebRequestMethods+Ftp]::DownloadFile
+    $credentials = New-Object System.Net.NetworkCredential($FtpUser, $FtpPassword)
+    $downloadRequest.Credentials = $credentials
+    $downloadRequest.EnableSsl = $true # Enable SSL/TLS
+
+    # Execute the download request
+    try {
+        $downloadResponse = $downloadRequest.GetResponse()
+        $sourceStream = $downloadResponse.GetResponseStream()
+        $targetStream = [System.IO.File]::Create("$Path\$FileName")
+        $buffer = New-Object byte[] 10240
+        while (($read = $sourceStream.Read($buffer, 0, $buffer.Length)) -gt 0)
+        {
+            $targetStream.Write($buffer, 0, $read)
+        }
+        Write-Host "Download complete."
+    }
+    catch {
+        Write-Error "Failed to download file: $_"
+    }
+    finally {
+        $targetStream.Dispose()
+        $sourceStream.Dispose()
+        $downloadResponse.Dispose()
+    }
+}
 
 function InitRestApiUrl
 {
