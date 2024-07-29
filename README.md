@@ -43,3 +43,6 @@ Installation requires administrative rights.
 # Example
 Get information about camera number **1** using the **Get-VaoCamera** function.
 ![image](https://user-images.githubusercontent.com/14876765/170988708-7de440cb-cda1-456b-b3a2-dce941b5f044.png)
+
+Example of using envirment variable for API connection
+![image](https://github.com/user-attachments/assets/cce58145-603e-4650-ab7a-fb0cb7f9112f)
