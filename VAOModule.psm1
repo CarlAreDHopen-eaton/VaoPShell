@@ -798,3 +798,4 @@ Export-ModuleMember -Function Invoke-VaoFromUrl
 Export-ModuleMember -Function Start-VaoVideoDownload
 Export-ModuleMember -Function Get-VaoAuthentication
 Export-ModuleMember -Function Set-VaoAuthentication
+Export-ModuleMember -Function Get-VaoStatusMessages
