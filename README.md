@@ -29,9 +29,16 @@ Installation requires administrative rights.
 - **Monitor functions**
   - Get-VaoCameraOnMonitor  - Get the current camera on the specified monitor.
   - Invoke-VaoCameraToMonitor - Selects the specified camera to the specified monitor.
+- **Other functions**
+  - Get-VaoStatusMessages  - Gets the status messages
+- **Download functions**
+  - Start-VaoVideoDownload - Starts downloading a recording from a HVR
 - **Information functions**
   - Get-VaoApiVersion - Gets the API version 
-  - Get-VaoVendorVersion - Gets the vendor information and version 
+  - Get-VaoVendorVersion - Gets the vendor information and version
+- ** Support functions**
+  - Set-VaoAuthentication - Sets the authentication details to the current enviroment settings using a URI 
+  - Get-VaoAuthentication - Gets the authentication details from the current enviroment settings and pipes these into one of the other functions.
 
 # Example
 Get information about camera number **1** using the **Get-VaoCamera** function.
