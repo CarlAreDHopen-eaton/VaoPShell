@@ -36,7 +36,7 @@ Installation requires administrative rights.
 - **Information functions**
   - Get-VaoApiVersion - Gets the API version 
   - Get-VaoVendorVersion - Gets the vendor information and version
-- ** Support functions**
+- **Support functions**
   - Set-VaoAuthentication - Sets the authentication details to the current enviroment settings using a URI 
   - Get-VaoAuthentication - Gets the authentication details from the current enviroment settings and pipes these into one of the other functions.
 
