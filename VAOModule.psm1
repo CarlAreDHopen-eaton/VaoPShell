@@ -26,7 +26,7 @@
 .PARAMETER Url
    The URL containing Vao-related parameters.
 .EXAMPLE
-   $params = Invoke-VaoFromUrl -Url "https://user:pass@remotehost:444?IgnoreCertificarteErrors=true"
+   $params = Invoke-VaoFromUrl -Url "https://user:pass@remotehost:444?IgnoreCertificateErrors=true"
    Start-VaoVideoDownload @params
 #>
 function Invoke-VaoFromUrl {
@@ -62,7 +62,7 @@ function Invoke-VaoFromUrl {
             $queryParameters[$key] = $value
         }
     }
-    $ignorCert = if ($queryParameters["IgnoreCertificarteErrors"]) { $true } else { $false }
+    $ignorCert = if ($queryParameters["IgnoreCertificateErrors"]) { $true } else { $false }
 
     $params = [PSCustomObject]@{
         RemoteHost = $RemoteHost
@@ -70,7 +70,7 @@ function Invoke-VaoFromUrl {
         Password = $Password
         RemotePort = $RemotePort
         Secure = $Secure
-        IgnoreCertificarteErrors = $ignorCert
+        IgnoreCertificateErrors = $ignorCert
     }
 
     return $params
@@ -85,7 +85,7 @@ function Invoke-VaoFromUrl {
 .PARAMETER Url
    The URL containing authentication details (e.g., username, password, host, port, etc.).
 .EXAMPLE
-   Set-VaoAuthentication -Url "https://user:pass@remotehost:444?IgnoreCertificarteErrors=true"
+   Set-VaoAuthentication -Url "https://user:pass@remotehost:444?IgnoreCertificateErrors=true"
    This example sets the VAO URL with the specified authentication details into the user's environment variables.
 .NOTES
    The stored URL is set in the user's environment variables under the key "VAO_URL". 
@@ -173,7 +173,7 @@ function Start-VaoVideoDownload {
         [Parameter(ValueFromPipelineByPropertyName=$true)]
         [switch]$Secure = $false,
         [Parameter(ValueFromPipelineByPropertyName=$true)]
-        [switch]$IgnoreCertificarteErrors = $false,
+        [switch]$IgnoreCertificateErrors = $false,
 
         # Function specific parameters
         [Parameter(Mandatory=$true)]
@@ -197,7 +197,7 @@ function Start-VaoVideoDownload {
         }
 
         # Check that the API version is at least 1.1 (majorversion.minorversion)
-        $apiVersion = Get-VaoApiVersion -RemoteHost $RemoteHost -User $User -Password $Password -RemotePort $RemotePort -Secure:$Secure.IsPresent -IgnoreCertificarteErrors:$IgnoreCertificarteErrors.IsPresent 
+        $apiVersion = Get-VaoApiVersion -RemoteHost $RemoteHost -User $User -Password $Password -RemotePort $RemotePort -Secure:$Secure.IsPresent -IgnoreCertificateErrors:$IgnoreCertificateErrors.IsPresent 
         if ($apiVersion.majorversion -lt 1 -or ($apiVersion.majorversion -eq 1 -and $apiVersion.minorversion -lt 1)) {
             Write-Error "API version must be at least 1.1. Current version is $apiVersion"
             return
@@ -210,7 +210,7 @@ function Start-VaoVideoDownload {
             return
         }
 
-        $cameraRecorders = Get-VaoCameraRecorders -RemoteHost $RemoteHost -User $User -Password $Password -RemotePort $RemotePort -Secure:$Secure.IsPresent -IgnoreCertificarteErrors:$IgnoreCertificarteErrors.IsPresent -CameraNumber $CameraNumber 
+        $cameraRecorders = Get-VaoCameraRecorders -RemoteHost $RemoteHost -User $User -Password $Password -RemotePort $RemotePort -Secure:$Secure.IsPresent -IgnoreCertificateErrors:$IgnoreCertificateErrors.IsPresent -CameraNumber $CameraNumber 
 
         $foundRecorder = $false
         $recorderAddress = ""
@@ -240,7 +240,7 @@ function Start-VaoVideoDownload {
             duration = $Duration
         } | ConvertTo-Json
 
-        if ($true -eq $IgnoreCertificarteErrors) {
+        if ($true -eq $IgnoreCertificateErrors) {
             [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
         }
 
@@ -265,7 +265,7 @@ function Start-VaoVideoDownload {
             # Format the date and time explicitly using the invariant culture to avoid locale issues
             $formattedDateTime = $requestDateTime.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", [System.Globalization.CultureInfo]::InvariantCulture)
 
-            $messages = Get-VaoStatusMessages -RemoteHost $RemoteHost -User $User -Password $Password -RemotePort $RemotePort -Secure:$Secure.IsPresent -IgnoreCertificarteErrors:$IgnoreCertificarteErrors.IsPresent -IfModifiedSince "$formattedDateTime"
+            $messages = Get-VaoStatusMessages -RemoteHost $RemoteHost -User $User -Password $Password -RemotePort $RemotePort -Secure:$Secure.IsPresent -IgnoreCertificateErrors:$IgnoreCertificrteErrors.IsPresent -IfModifiedSince "$formattedDateTime"
 
             $downloadOk = $false
             $downloadUrl = ""
@@ -317,7 +317,7 @@ function Get-VaoCameraRecorders {
         [Parameter()]
         [switch]$Secure = $false,
         [Parameter()]
-        [switch]$IgnoreCertificarteErrors = $false,
+        [switch]$IgnoreCertificateErrors = $false,
 
         # Function specific parameters
         [Parameter(Mandatory=$true)]
@@ -337,7 +337,7 @@ function Get-VaoCameraRecorders {
         viewerId = $viewerId
     } | ConvertTo-Json
    
-    if ($true -eq $IgnoreCertificarteErrors) {
+    if ($true -eq $IgnoreCertificateErrors) {
         [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
     }
 
@@ -360,7 +360,7 @@ function Get-VaoStatusMessages{
         [Parameter(ValueFromPipelineByPropertyName=$true)]
         [switch]$Secure = $false,
         [Parameter(ValueFromPipelineByPropertyName=$true)]
-        [switch]$IgnoreCertificarteErrors = $false,
+        [switch]$IgnoreCertificateErrors = $false,
 
         # Function specific parameters
         [Parameter(Mandatory=$false)]
@@ -372,7 +372,7 @@ function Get-VaoStatusMessages{
     $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
     $url += "/status"
 
-    if ($true -eq $IgnoreCertificarteErrors) {
+    if ($true -eq $IgnoreCertificrteErrors) {
         [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
     }
 
@@ -412,7 +412,7 @@ function Get-VaoApiVersion
         [Parameter(ValueFromPipelineByPropertyName=$true)]
         [switch]$Secure = $false,
         [Parameter(ValueFromPipelineByPropertyName=$true)]
-        [switch]$IgnoreCertificarteErrors = $false
+        [switch]$IgnoreCertificateErrors = $false
     )
 
     $headers = GetRestHeaders -User $User -Password $Password
@@ -420,7 +420,7 @@ function Get-VaoApiVersion
     $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
     $url += "/version/api"
   
-    if ($true -eq $IgnoreCertificarteErrors)
+    if ($true -eq $IgnoreCertificateErrors)
     {
         [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
     }
@@ -457,7 +457,7 @@ function Get-VaoVendorVersion
         [Parameter(ValueFromPipelineByPropertyName=$true)]
         [switch]$Secure = $false,
         [Parameter(ValueFromPipelineByPropertyName=$true)]
-        [switch]$IgnoreCertificarteErrors = $false
+        [switch]$IgnoreCertificateErrors = $false
     )
 
     $headers = GetRestHeaders -User $User -Password $Password
@@ -465,7 +465,7 @@ function Get-VaoVendorVersion
     $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
     $url += "/version/implementation"
   
-    if ($true -eq $IgnoreCertificarteErrors)
+    if ($true -eq $IgnoreCertificateErrors)
     {
         [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
     }
@@ -501,7 +501,7 @@ function Get-VaoCameraList
         [Parameter(ValueFromPipelineByPropertyName=$true)]
         [switch]$Secure = $false,
         [Parameter(ValueFromPipelineByPropertyName=$true)]
-        [switch]$IgnoreCertificarteErrors = $false
+        [switch]$IgnoreCertificateErrors = $false
     )
     
     $headers = GetRestHeaders -User $User -Password $Password
@@ -509,7 +509,7 @@ function Get-VaoCameraList
     $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
     $url += "/inputs"
   
-    if ($true -eq $IgnoreCertificarteErrors)
+    if ($true -eq $IgnoreCertificateErrors)
     {
         [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
     }
@@ -549,7 +549,7 @@ function Invoke-VaoCameraToMonitor
         [Parameter(ValueFromPipelineByPropertyName=$true)]
         [switch]$Secure = $false,
         [Parameter(ValueFromPipelineByPropertyName=$true)]
-        [switch]$IgnoreCertificarteErrors = $false,
+        [switch]$IgnoreCertificateErrors = $false,
 
         # Function specific parameters
         [Parameter(Mandatory=$true)]
@@ -565,7 +565,7 @@ function Invoke-VaoCameraToMonitor
 
     $jsonData = "{ ""camera"" : """ + $CameraNumber + """}"
 
-    if ($true -eq $IgnoreCertificarteErrors)
+    if ($true -eq $IgnoreCertificateErrors)
     {
         [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
     }
@@ -588,7 +588,7 @@ function Get-VaoCamera
         [Parameter(ValueFromPipelineByPropertyName=$true)]
         [switch]$Secure = $false,
         [Parameter(ValueFromPipelineByPropertyName=$true)]
-        [switch]$IgnoreCertificarteErrors = $false,
+        [switch]$IgnoreCertificateErrors = $false,
 
         # Function specific parameters
         [Parameter(Mandatory=$true)]
@@ -600,7 +600,7 @@ function Get-VaoCamera
     $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
     $url += "/inputs/" + $CameraNumber    
     
-    if ($true -eq $IgnoreCertificarteErrors)
+    if ($true -eq $IgnoreCertificateErrors)
     {
         [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
     }
@@ -623,7 +623,7 @@ function Get-VaoCameraPresetList
         [Parameter(ValueFromPipelineByPropertyName=$true)]
         [switch]$Secure = $false,
         [Parameter(ValueFromPipelineByPropertyName=$true)]
-        [switch]$IgnoreCertificarteErrors = $false,
+        [switch]$IgnoreCertificateErrors = $false,
 
          # Function specific parameters
          [Parameter(Mandatory=$true)]
@@ -635,7 +635,7 @@ function Get-VaoCameraPresetList
     $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
     $url += "/inputs/$CameraNumber/presets"
     
-    if ($true -eq $IgnoreCertificarteErrors)
+    if ($true -eq $IgnoreCertificateErrors)
     {
         [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
     }
@@ -658,7 +658,7 @@ function Get-VaoCameraPreset
         [Parameter(ValueFromPipelineByPropertyName=$true)]
         [switch]$Secure = $false,
         [Parameter(ValueFromPipelineByPropertyName=$true)]
-        [switch]$IgnoreCertificarteErrors = $false,
+        [switch]$IgnoreCertificateErrors = $false,
 
         # Function specific parameters
         [Parameter(Mandatory=$true)]
@@ -672,7 +672,7 @@ function Get-VaoCameraPreset
     $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
     $url += "/inputs/$CameraNumber/presets/$PresetNumber"
     
-    if ($true -eq $IgnoreCertificarteErrors)
+    if ($true -eq $IgnoreCertificateErrors)
     {
         [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
     }
@@ -695,7 +695,7 @@ function Get-VaoCameraOnMonitor
         [Parameter(ValueFromPipelineByPropertyName=$true)]
         [switch]$Secure = $false,
         [Parameter(ValueFromPipelineByPropertyName=$true)]
-        [switch]$IgnoreCertificarteErrors = $false,
+        [switch]$IgnoreCertificateErrors = $false,
 
         # Function specific parameters
         [Parameter(Mandatory=$true)]
@@ -707,7 +707,7 @@ function Get-VaoCameraOnMonitor
     $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
     $url += "/video-output/" + $MonitorNumber    
     
-    if ($true -eq $IgnoreCertificarteErrors)
+    if ($true -eq $IgnoreCertificateErrors)
     {
         [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
     }
@@ -730,7 +730,7 @@ function Rename-VaoCamera
         [Parameter(ValueFromPipelineByPropertyName=$true)]
         [switch]$Secure = $false,
         [Parameter(ValueFromPipelineByPropertyName=$true)]
-        [switch]$IgnoreCertificarteErrors = $false,
+        [switch]$IgnoreCertificateErrors = $false,
 
         # Function specific parameters
         [Parameter(Mandatory=$true)]
@@ -745,7 +745,7 @@ function Rename-VaoCamera
     $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
     $url += "/inputs/" + $CameraNumber    
     
-    if ($true -eq $IgnoreCertificarteErrors)
+    if ($true -eq $IgnoreCertificateErrors)
     {
         [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
     }
@@ -770,7 +770,7 @@ function Add-VaoCameraPreset
         [Parameter(ValueFromPipelineByPropertyName=$true)]
         [switch]$Secure = $false,
         [Parameter(ValueFromPipelineByPropertyName=$true)]
-        [switch]$IgnoreCertificarteErrors = $false,
+        [switch]$IgnoreCertificateErrors = $false,
 
         # Function specific parameters
         [Parameter(Mandatory=$true)]
@@ -786,7 +786,7 @@ function Add-VaoCameraPreset
 
     $jsonData = "{ ""name"" : """ + $PresetName + """}"
 
-    if ($true -eq $IgnoreCertificarteErrors)
+    if ($true -eq $IgnoreCertificateErrors)
     {
         [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
     }
@@ -809,7 +809,7 @@ function Rename-VaoCameraPreset
         [Parameter(ValueFromPipelineByPropertyName=$true)]
         [switch]$Secure = $false,
         [Parameter(ValueFromPipelineByPropertyName=$true)]
-        [switch]$IgnoreCertificarteErrors = $false,
+        [switch]$IgnoreCertificateErrors = $false,
 
          # Function specific parameters
         [Parameter(Mandatory=$true)]
@@ -825,7 +825,7 @@ function Rename-VaoCameraPreset
     $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
     $url += "/inputs/$CameraNumber/presets/$PresetNumber"
     
-    if ($true -eq $IgnoreCertificarteErrors)
+    if ($true -eq $IgnoreCertificateErrors)
     {
         [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
     }
@@ -850,7 +850,7 @@ function Remove-VaoCameraPreset
         [Parameter(ValueFromPipelineByPropertyName=$true)]
         [switch]$Secure = $false,
         [Parameter(ValueFromPipelineByPropertyName=$true)]
-        [switch]$IgnoreCertificarteErrors = $false,
+        [switch]$IgnoreCertificateErrors = $false,
 
         # Function specific parameters
         [Parameter(Mandatory=$true)]
@@ -864,7 +864,7 @@ function Remove-VaoCameraPreset
     $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
     $url += "/inputs/$CameraNumber/presets/$PresetNumber"
     
-    if ($true -eq $IgnoreCertificarteErrors)
+    if ($true -eq $IgnoreCertificateErrors)
     {
         [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
     }
@@ -887,7 +887,7 @@ function Invoke-VaoCameraPreset
         [Parameter(ValueFromPipelineByPropertyName=$true)]
         [switch]$Secure = $false,
         [Parameter(ValueFromPipelineByPropertyName=$true)]
-        [switch]$IgnoreCertificarteErrors = $false,
+        [switch]$IgnoreCertificateErrors = $false,
 
         # Function specific parameters
         [Parameter(Mandatory=$true)]
@@ -901,7 +901,7 @@ function Invoke-VaoCameraPreset
     $url = InitRestApiUrl -RemoteHost $RemoteHost -RemotePort $RemotePort -Secure $Secure
     $url += "/inputs/$CameraNumber/presets/$PresetNumber"
     
-    if ($true -eq $IgnoreCertificarteErrors)
+    if ($true -eq $IgnoreCertificateErrors)
     {
         [System.Net.ServicePointManager]::CertificatePolicy = GetAcceptAllCertificatesPolicyObject
     }
